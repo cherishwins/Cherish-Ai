@@ -60,7 +60,8 @@ class SensorService {
   double? _homeLat;
   double? _homeLng;
 
-  String _caregiverPhone = "9608425857";
+  // No default caregiver: an unset number means no SMS is sent.
+  String _caregiverPhone = "";
 
   final List<Map<String, String>> _notificationQueue = [];
   bool _isProcessingQueue = false;
@@ -397,7 +398,7 @@ class SensorService {
       final snapshot = await _db.child("users/$userId/profile").get();
       if (snapshot.exists) {
         final data = snapshot.value as Map<dynamic, dynamic>;
-        _caregiverPhone = data['caregiverPhone']?.toString() ?? "9608425857";
+        _caregiverPhone = data['caregiverPhone']?.toString() ?? "";
       }
       return _caregiverPhone;
     } catch (e) {
@@ -691,9 +692,11 @@ class SensorService {
       }
 
       String title = isManual ? "MANUAL SOS ALERT" : "EMERGENCY ACTIVE";
-      String body = isSmsEnabled
-          ? "SMS Sent to caregiver."
-          : "Impact detected.";
+      String body = !isSmsEnabled
+          ? "Impact detected."
+          : caregiverPhone.isEmpty
+          ? "No caregiver phone set. No SMS was sent."
+          : "SMS Sent to caregiver.";
 
       await _triggerLocalNudge(title, body, 999, _channelEmergency);
       _fallAlertController.add(true);
@@ -712,6 +715,10 @@ class SensorService {
 
     try {
       String caregiverPhone = await getCaregiverPhone();
+      if (caregiverPhone.isEmpty) {
+        debugPrint("⚠️ Safe SMS skipped: no caregiver phone set");
+        return;
+      }
       String message =
           "I am safe now. The alert has been resolved. False alarm.";
 
