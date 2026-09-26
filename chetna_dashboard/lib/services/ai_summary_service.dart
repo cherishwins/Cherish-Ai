@@ -5,8 +5,12 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 
 class AISummaryService {
-  static const String _apiKey =
-      'AIzaSyBpDB9ti93Dy4ywAKnNFiXhE8aHbW2AE1Y'; 
+  // Supplied at build time, never committed:
+  //   flutter run --dart-define=GEMINI_API_KEY=<your key>
+  static const String _apiKey = String.fromEnvironment(
+    'GEMINI_API_KEY',
+    defaultValue: '',
+  );
   static final GenerativeModel _model = GenerativeModel(
     model: 'gemini-2.5-flash-lite',
     apiKey: _apiKey,
@@ -88,9 +92,9 @@ class AISummaryService {
       debugPrint('  - Manual fall count: $manualFallCount');
       debugPrint('  - Manual SOS count: $manualSosCount');
 
-      if (_apiKey == 'YOUR_GEMINI_API_KEY') {
+      if (_apiKey.isEmpty) {
         throw Exception(
-          'Please configure your Gemini API key in AISummaryService',
+          'Gemini API key not set. Build with --dart-define=GEMINI_API_KEY=<your key>',
         );
       }
 
