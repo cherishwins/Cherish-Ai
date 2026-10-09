@@ -21,7 +21,12 @@ import 'dart:math';
 
 class SensorService {
   final _db = FirebaseDatabase.instance.ref();
-  final String apiKey = "bb62fd0da5305d48c953b6f2f45038ea";
+  // OpenWeatherMap key, supplied at build time and never committed:
+  //   flutter run --dart-define=OWM_API_KEY=<your key>
+  final String apiKey = const String.fromEnvironment(
+    'OWM_API_KEY',
+    defaultValue: '',
+  );
 
   // Telephony Instance for Background SMS
   final Telephony telephony = Telephony.instance;
@@ -60,7 +65,8 @@ class SensorService {
   double? _homeLat;
   double? _homeLng;
 
-  String _caregiverPhone = "9608425857";
+  // No default caregiver: an unset number means no SMS is sent.
+  String _caregiverPhone = "";
 
   final List<Map<String, String>> _notificationQueue = [];
   bool _isProcessingQueue = false;
@@ -397,7 +403,7 @@ class SensorService {
       final snapshot = await _db.child("users/$userId/profile").get();
       if (snapshot.exists) {
         final data = snapshot.value as Map<dynamic, dynamic>;
-        _caregiverPhone = data['caregiverPhone']?.toString() ?? "9608425857";
+        _caregiverPhone = data['caregiverPhone']?.toString() ?? "";
       }
       return _caregiverPhone;
     } catch (e) {
@@ -691,9 +697,11 @@ class SensorService {
       }
 
       String title = isManual ? "MANUAL SOS ALERT" : "EMERGENCY ACTIVE";
-      String body = isSmsEnabled
-          ? "SMS Sent to caregiver."
-          : "Impact detected.";
+      String body = !isSmsEnabled
+          ? "Impact detected."
+          : caregiverPhone.isEmpty
+          ? "No caregiver phone set. No SMS was sent."
+          : "SMS Sent to caregiver.";
 
       await _triggerLocalNudge(title, body, 999, _channelEmergency);
       _fallAlertController.add(true);
@@ -712,6 +720,10 @@ class SensorService {
 
     try {
       String caregiverPhone = await getCaregiverPhone();
+      if (caregiverPhone.isEmpty) {
+        debugPrint("⚠️ Safe SMS skipped: no caregiver phone set");
+        return;
+      }
       String message =
           "I am safe now. The alert has been resolved. False alarm.";
 
@@ -840,6 +852,7 @@ class SensorService {
   );
 
   Future<void> updateExternalStats() async {
+    if (apiKey.isEmpty) return; // no OWM_API_KEY: skip weather and AQI
     try {
       Position pos = await Geolocator.getCurrentPosition();
       final responses = await Future.wait([

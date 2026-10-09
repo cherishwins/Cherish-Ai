@@ -1,3 +1,18 @@
+> **About this copy (cherishwins/Cherish-Ai).** This is a fork of ArnabTechiee/Chetna
+> (https://github.com/ArnabTechiee/Chetna), unmodified up to commit `8f6e50a`.
+> It is not a Cherish product, it is not maintained here, and it must not be deployed.
+> **No licence is granted:** there is no LICENSE file, so the MIT badge below grants nothing.
+> The code and the text below are the work of the Chetna team listed under Contributors,
+> apart from the changes listed here. Claims in this README and in the app screens have not
+> been verified, and the Live Demos links are the upstream team's deployments.
+>
+> **Changes in this fork.** The hard-coded default caregiver phone number was removed, so an
+> SOS with no caregiver set sends no SMS. The Gemini and OpenWeatherMap keys are no longer in
+> the code: pass them at build time with `--dart-define=GEMINI_API_KEY=...` (dashboard) and
+> `--dart-define=OWM_API_KEY=...` (app). `chetna_app/android/app/google-services.json` is no
+> longer tracked; supply your own. The upstream team's keys remain in this fork's git history
+> and in the upstream repository, and only their owner can rotate them.
+
 # 🌟 Chetna: Proactive Health & Safety Ecosystem
 
 > An edge-AI powered health ecosystem designed for proactive elderly care, featuring real-time fall detection, environmental sensor fusion, and multi-modal SOS alerts.  

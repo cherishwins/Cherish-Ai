@@ -43,3 +43,15 @@ build/
 android/app/build/
 ios/build/
 ios/Pods/
+
+# =========================
+# Firebase platform config (per developer, never committed)
+# =========================
+google-services.json
+GoogleService-Info.plist
+
+# =========================
+# Local tooling artefacts
+# =========================
+*.lnk
+.firebase/
